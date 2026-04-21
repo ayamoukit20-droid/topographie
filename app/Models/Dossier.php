@@ -49,7 +49,6 @@ class Dossier extends Model
     // ── SCOPES ──────────────────────────────────────
 
     public function scopeEnCours($query)  { return $query->where('statut', 'en_cours'); }
-    public function scopeValide($query)   { return $query->where('statut', 'valide'); }
     public function scopeTermine($query)  { return $query->where('statut', 'termine'); }
 
     // ── ACCESSEURS STATUT ───────────────────────────
@@ -58,7 +57,6 @@ class Dossier extends Model
     {
         return match($this->statut) {
             'en_cours' => 'En cours',
-            'valide'   => 'Valide',
             'termine'  => 'Termine',
             default    => $this->statut,
         };
@@ -68,7 +66,6 @@ class Dossier extends Model
     {
         return match($this->statut) {
             'en_cours' => 'warning',
-            'valide'   => 'info',
             'termine'  => 'success',
             default    => 'secondary',
         };

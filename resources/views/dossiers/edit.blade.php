@@ -55,12 +55,14 @@
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label-topo">Type de dossier *</label>
-                        <select name="type_dossier" class="form-select-topo" required>
-                            <option value="immatriculation" {{ old('type_dossier',$dossier->type_dossier)=='immatriculation' ?'selected':'' }}>Immatriculation Fonciere</option>
-                            <option value="maj"             {{ old('type_dossier',$dossier->type_dossier)=='maj'             ?'selected':'' }}>Mise a Jour (MAJ)</option>
-                            <option value="copropriete"     {{ old('type_dossier',$dossier->type_dossier)=='copropriete'     ?'selected':'' }}>Copropriete</option>
-                            <option value="morcellement"    {{ old('type_dossier',$dossier->type_dossier)=='morcellement'    ?'selected':'' }}>Morcellement</option>
-                            <option value="lotissement"     {{ old('type_dossier',$dossier->type_dossier)=='lotissement'     ?'selected':'' }}>Lotissement</option>
+                        <select name="type_dossier_id" class="form-select-topo" id="type-dossier-select" required>
+                            <option value="">-- Selectionnez le type --</option>
+                            @foreach($types as $type)
+                                <option value="{{ $type->id }}"
+                                    {{ (old('type_dossier_id', $dossier->type_dossier_id) == $type->id) ? 'selected' : '' }}>
+                                    {{ $type->nom }}
+                                </option>
+                            @endforeach
                         </select>
                         @error('type_dossier')
                             <div style="color:#f87171;font-size:12px;margin-top:4px;">{{ $message }}</div>
@@ -71,7 +73,6 @@
                         <label class="form-label-topo">Statut *</label>
                         <select name="statut" class="form-select-topo" required>
                             <option value="en_cours" {{ old('statut',$dossier->statut)=='en_cours'?'selected':'' }}>En cours</option>
-                            <option value="valide"   {{ old('statut',$dossier->statut)=='valide'  ?'selected':'' }}>Valide</option>
                             <option value="termine"  {{ old('statut',$dossier->statut)=='termine' ?'selected':'' }}>Termine</option>
                         </select>
                     </div>

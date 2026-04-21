@@ -227,17 +227,24 @@
                                    placeholder="Ex: PV de bornage" required>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label-topo">Type *</label>
+                            <label class="form-label-topo">Categorie du document *</label>
                             <select name="type_document" class="form-select-topo" required>
-                                <option value="">-- Type --</option>
-                                <option value="PV">PV (Proces-verbal)</option>
-                                <option value="plan">Plan</option>
-                                <option value="tableau">Tableau</option>
-                                <option value="rapport">Rapport</option>
-                                <option value="autorisation">Autorisation</option>
-                                <option value="titre">Titre foncier</option>
-                                <option value="certificat">Certificat</option>
-                                <option value="autre">Autre</option>
+                                <option value="">-- Selectionnez --</option>
+                                @if($dossier->typeDossier && $dossier->typeDossier->documentsRequis->isNotEmpty())
+                                    @foreach($dossier->typeDossier->documentsRequis as $req)
+                                        <option value="{{ $req->nom }}">{{ $req->nom }}</option>
+                                    @endforeach
+                                    <option value="Autre">Autre document</option>
+                                @else
+                                    <option value="PV">PV (Proces-verbal)</option>
+                                    <option value="Plan">Plan</option>
+                                    <option value="Tableau">Tableau</option>
+                                    <option value="Rapport">Rapport</option>
+                                    <option value="Autorisation">Autorisation</option>
+                                    <option value="Titre">Titre foncier</option>
+                                    <option value="Certificat">Certificat</option>
+                                    <option value="Autre">Autre</option>
+                                @endif
                             </select>
                         </div>
                         <div class="col-md-3 d-flex align-items-end">
@@ -263,25 +270,27 @@
     {{-- ═══ COLONNE DROITE ═══ --}}
     <div class="col-lg-4">
 
+        @php
+            $items = $dossier->checklist;
+            $uploadedTypes = $dossier->documents->pluck('type_document')->toArray();
+            $doneCnt = 0;
+            foreach($items as $item) {
+                if(in_array($item, $uploadedTypes)) { $doneCnt++; }
+            }
+            $pct = count($items) > 0 ? round(($doneCnt / count($items)) * 100) : 0;
+        @endphp
+
         {{-- PROGRESSION --}}
         <div class="card-topo mb-4">
             <h6 style="font-size:13px;font-weight:700;margin-bottom:14px;color:var(--white);">Progression</h6>
             @php
-                $progress = match($dossier->statut) {
-                    'en_cours' => 33,
-                    'valide'   => 66,
-                    'termine'  => 100,
-                    default    => 0
-                };
-                $progressColor = match($dossier->statut) {
-                    'en_cours' => 'linear-gradient(90deg,#f59e0b,#fbbf24)',
-                    'valide'   => 'linear-gradient(90deg,#2563eb,#3b82f6)',
-                    'termine'  => 'linear-gradient(90deg,#10b981,#34d399)',
-                    default    => 'var(--blue-400)'
-                };
+                $progress = $pct; // Utiliser le % de documents pour la progression
+                $progressColor = 'var(--blue-400)';
+                if($pct >= 50) $progressColor = 'linear-gradient(90deg,#3b82f6,#2563eb)';
+                if($pct == 100) $progressColor = 'linear-gradient(90deg,#10b981,#34d399)';
             @endphp
             <div class="progress-bar-topo">
-                <div class="progress-fill" style="width:{{ $progress }}%;background:{{ $progressColor }};"></div>
+                <div class="progress-fill" style="width:{{ $pct }}%;background:{{ $progressColor }};"></div>
             </div>
             <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-top:8px;">
                 <span>Creation</span>
@@ -297,66 +306,7 @@
             </h6>
             <p style="font-size:11px;color:var(--text-muted);margin-bottom:14px;">Documents requis pour : <strong style="color:#93c5fd;">{{ $dossier->type_label }}</strong></p>
 
-            @php
-                $checklists = [
-                    'immatriculation' => [
-                        'Requisition d\'immatriculation',
-                        'PV de bornage',
-                        'Plan de bornage',
-                        'Plan de situation',
-                        'Tableau de coordonnees (X,Y)',
-                        'Calcul de contenance',
-                    ],
-                    'maj' => [
-                        'Titre foncier',
-                        'Autorisation de construire',
-                        'Plan architecte',
-                        'Permis d\'habiter',
-                        'Plan de situation',
-                        'Plan de mise a jour',
-                        'Calcul surface batie',
-                    ],
-                    'copropriete' => [
-                        'Titre foncier',
-                        'Certificat de propriete',
-                        'Autorisation de construire',
-                        'Certificat de conformite',
-                        'Note de renseignements',
-                        'Plan de situation',
-                        'Plan de masse',
-                        'Plans architecturaux (RDC, etages)',
-                        'Tableau des surfaces (Tableau A)',
-                        'Tableau des tantiemes (Tableau B)',
-                        'Reglement de copropriete',
-                        'Etat descriptif de division',
-                    ],
-                    'morcellement' => [
-                        'Note de renseignements',
-                        'Autorisation de division',
-                        'Plan de division',
-                        'Calcul nouvelles surfaces',
-                        'Plan cadastral',
-                    ],
-                    'lotissement' => [
-                        'Plan de lotissement',
-                        'Cahier des charges',
-                        'Plan de masse',
-                        'Plan voirie (VRD)',
-                        'Plan reseaux',
-                        'PV de reception',
-                    ],
-                ];
-                $type = $dossier->type_dossier ?? 'immatriculation';
-                $items = $checklists[$type] ?? $checklists['immatriculation'];
-                $uploadedNames = $dossier->documents->pluck('nom')->toArray();
-                $doneCnt = 0;
-                foreach($items as $item) {
-                    foreach($uploadedNames as $uname) {
-                        if(stripos($uname, explode(' ', $item)[0]) !== false) { $doneCnt++; break; }
-                    }
-                }
-                $pct = count($items) > 0 ? round(($doneCnt / count($items)) * 100) : 0;
-            @endphp
+
 
             <div style="margin-bottom:12px;">
                 <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-bottom:6px;">
@@ -368,14 +318,27 @@
                 </div>
             </div>
 
+            @if($pct == 100 && $dossier->statut != 'termine')
+                <div style="margin-top:15px;padding:12px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:10px;text-align:center;">
+                    <p style="font-size:12px;color:#34d399;margin-bottom:8px;"><strong>Félicitations !</strong> Tous les documents sont présents.</p>
+                    <form action="{{ route('dossiers.update', $dossier) }}" method="POST">
+                        @csrf @method('PUT')
+                        <input type="hidden" name="statut" value="termine">
+                        {{-- On garde les autres champs obligatoires --}}
+                        <input type="hidden" name="type_dossier_id" value="{{ $dossier->type_dossier_id }}">
+                        <input type="hidden" name="proprietaire" value="{{ $dossier->proprietaire }}">
+                        <input type="hidden" name="date_creation" value="{{ $dossier->date_creation->format('Y-m-d') }}">
+                        <button type="submit" class="btn-orange" style="width:100%;padding:6px;font-size:11px;background:#10b981;border-color:#10b981;">
+                            Marquer comme Terminé
+                        </button>
+                    </form>
+                </div>
+            @endif
+
             <div style="display:flex;flex-direction:column;gap:6px;">
                 @foreach($items as $item)
                     @php
-                        $isDone = false;
-                        $keyword = explode(' ', $item)[0];
-                        foreach($uploadedNames as $uname) {
-                            if(stripos($uname, $keyword) !== false) { $isDone = true; break; }
-                        }
+                        $isDone = in_array($item, $uploadedTypes);
                     @endphp
                     <div class="checklist-item {{ $isDone ? 'done' : '' }}">
                         <div class="check-circle {{ $isDone ? 'done' : '' }}">

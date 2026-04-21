@@ -401,7 +401,13 @@
         </div>
         <div>
             <div class="logo-name">TopoSmart</div>
-            <div class="logo-sub">ANCFCC — Maroc</div>
+            <div class="logo-sub">
+                @if(request()->is('admin*'))
+                    ADMINISTRATION — ANCFCC
+                @else
+                    ANCFCC — Maroc
+                @endif
+            </div>
         </div>
     </div>
 
@@ -435,6 +441,14 @@
             <i class="bi bi-chat-dots-fill"></i> Assistant IA
         </a>
 
+        @if(auth()->user()->isAdmin())
+        <div class="sidebar-section">Administration</div>
+        <a href="{{ route('admin.users.index') }}"
+           class="nav-item-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+            <i class="bi bi-people-fill"></i> Gestion utilisateurs
+        </a>
+        @endif
+
         <div class="sidebar-section">Compte</div>
 
         <a href="{{ route('profile.edit') }}"
@@ -455,7 +469,12 @@
         <div class="user-card">
             <div class="user-avatar">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</div>
             <div>
-                <div class="user-name">{{ auth()->user()->name }}</div>
+                <div class="user-name">
+                    {{ auth()->user()->name }}
+                    @if(auth()->user()->isAdmin())
+                        <span style="font-size:9px;background:rgba(245,158,11,0.2);color:#fbbf24;padding:1px 5px;border-radius:4px;margin-left:4px;border:1px solid rgba(245,158,11,0.3);">ADMIN</span>
+                    @endif
+                </div>
                 <div class="user-role">{{ auth()->user()->specialite ?? 'Topographe' }}</div>
             </div>
         </div>
@@ -467,7 +486,14 @@
 
     <!-- TOPBAR -->
     <div class="topbar">
-        <div class="topbar-title">@yield('page-title', 'Tableau de bord')</div>
+        <div class="topbar-title">
+            @yield('page-title', 'Tableau de bord')
+            @if(request()->is('admin*'))
+                <span style="font-size:10px;background:rgba(37,99,235,0.15);color:#60a5fa;padding:3px 10px;border-radius:20px;margin-left:12px;border:1px solid rgba(37,99,235,0.3);font-weight:600;letter-spacing:0.5px;">
+                    <i class="bi bi-shield-lock-fill" style="margin-right:4px;"></i> MODULE ADMINISTRATION
+                </span>
+            @endif
+        </div>
         <div class="topbar-actions">
             <a href="{{ route('dossiers.create') }}" class="btn-orange">
                 <i class="bi bi-plus-lg"></i> Nouveau dossier

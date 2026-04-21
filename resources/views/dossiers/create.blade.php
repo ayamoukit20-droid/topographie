@@ -55,13 +55,13 @@
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label-topo">Type de dossier *</label>
-                        <select name="type_dossier" class="form-select-topo" id="type-dossier-select" required>
+                        <select name="type_dossier_id" class="form-select-topo" id="type-dossier-select" required>
                             <option value="">-- Selectionnez le type --</option>
-                            <option value="immatriculation" {{ old('type_dossier')=='immatriculation' ?'selected':'' }}>Immatriculation Fonciere</option>
-                            <option value="maj"             {{ old('type_dossier')=='maj'             ?'selected':'' }}>Mise a Jour (MAJ)</option>
-                            <option value="copropriete"     {{ old('type_dossier')=='copropriete'     ?'selected':'' }}>Copropriete</option>
-                            <option value="morcellement"    {{ old('type_dossier')=='morcellement'    ?'selected':'' }}>Morcellement</option>
-                            <option value="lotissement"     {{ old('type_dossier')=='lotissement'     ?'selected':'' }}>Lotissement</option>
+                            @foreach($types as $type)
+                                <option value="{{ $type->id }}" data-code="{{ $type->code }}" {{ old('type_dossier_id') == $type->id ? 'selected' : '' }}>
+                                    {{ $type->nom }}
+                                </option>
+                            @endforeach
                         </select>
                         @error('type_dossier')
                             <div style="color:#f87171;font-size:12px;margin-top:4px;">{{ $message }}</div>
@@ -72,7 +72,6 @@
                         <label class="form-label-topo">Statut *</label>
                         <select name="statut" class="form-select-topo" required>
                             <option value="en_cours" {{ old('statut','en_cours')=='en_cours' ?'selected':'' }}>En cours</option>
-                            <option value="valide"   {{ old('statut')=='valide'   ?'selected':'' }}>Valide</option>
                             <option value="termine"  {{ old('statut')=='termine'  ?'selected':'' }}>Termine</option>
                         </select>
                     </div>
@@ -260,11 +259,9 @@ Object.entries(focusMap).forEach(([sel, step]) => {
 
 // ── CHECKLIST DYNAMIQUE ──
 const CHECKLISTS = {
-    immatriculation: ["Requisition d'immatriculation","PV de bornage","Plan de bornage","Plan de situation","Tableau de coordonnees (X,Y)","Calcul de contenance"],
-    maj: ["Titre foncier","Autorisation de construire","Plan architecte","Permis d'habiter","Plan de situation","Plan de mise a jour","Calcul surface batie"],
-    copropriete: ["Titre foncier","Certificat de propriete","Autorisation de construire","Certificat de conformite","Note de renseignements","Plan de situation","Plan de masse","Plans architecturaux","Tableau des surfaces (Tableau A)","Tableau des tantiemes (Tableau B)","Reglement de copropriete","Etat descriptif de division"],
-    morcellement: ["Note de renseignements","Autorisation de division","Plan de division","Calcul nouvelles surfaces","Plan cadastral"],
-    lotissement: ["Plan de lotissement","Cahier des charges","Plan de masse","Plan voirie (VRD)","Plan reseaux","PV de reception"],
+    @foreach($types as $type)
+        "{{ $type->id }}": {!! json_encode($type->documentsRequis->pluck('nom')) !!},
+    @endforeach
 };
 
 document.getElementById('type-dossier-select')?.addEventListener('change', function() {

@@ -13,8 +13,12 @@ class DossierController extends Controller
 
     public function index(Request $request)
     {
-        $query = auth()->user()->dossiers()
-            ->with(['typeDossier', 'documents'])
+        $user  = auth()->user();
+        $query = $user->isAdmin() 
+            ? Dossier::query() 
+            : $user->dossiers();
+            
+        $query->with(['typeDossier', 'user', 'documents'])
             ->withCount('documents')
             ->latest();
 
@@ -56,7 +60,7 @@ class DossierController extends Controller
             'proprietaire'    => 'required|string|max:255',
             'description'     => 'nullable|string',
             'date_creation'   => 'required|date',
-            'statut'          => 'required|in:en_cours,valide,termine',
+            'statut'          => 'required|in:en_cours,termine',
             'localisation'    => 'nullable|string|max:255',
             'lat'             => 'nullable|numeric|between:-90,90',
             'lng'             => 'nullable|numeric|between:-180,180',
@@ -101,7 +105,7 @@ class DossierController extends Controller
             'proprietaire'    => 'required|string|max:255',
             'description'     => 'nullable|string',
             'date_creation'   => 'required|date',
-            'statut'          => 'required|in:en_cours,valide,termine',
+            'statut'          => 'required|in:en_cours,termine',
             'localisation'    => 'nullable|string|max:255',
             'lat'             => 'nullable|numeric|between:-90,90',
             'lng'             => 'nullable|numeric|between:-180,180',

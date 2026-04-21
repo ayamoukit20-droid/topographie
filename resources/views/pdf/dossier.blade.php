@@ -227,7 +227,6 @@
                     @php
                         $badgeClass = match($dossier->statut) {
                             'en_cours' => 'badge-warning',
-                            'valide'   => 'badge-info',
                             'termine'  => 'badge-success',
                             default    => ''
                         };

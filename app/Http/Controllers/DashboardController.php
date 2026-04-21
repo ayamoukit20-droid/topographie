@@ -11,20 +11,22 @@ class DashboardController extends Controller
     public function index()
     {
         $user = auth()->user();
+        $isAdmin = $user->isAdmin();
 
-        $totalDossiers  = $user->dossiers()->count();
-        $enCours        = $user->dossiers()->enCours()->count();
-        $valides        = $user->dossiers()->valide()->count();
-        $termines       = $user->dossiers()->termine()->count();
+        $baseQuery = $isAdmin ? Dossier::query() : $user->dossiers();
 
-        $derniersDossiers = $user->dossiers()
-            ->with(['typeDossier'])
+        $totalDossiers  = $baseQuery->count();
+        $enCours        = (clone $baseQuery)->enCours()->count();
+        $termines       = (clone $baseQuery)->termine()->count();
+
+        $derniersDossiers = (clone $baseQuery)
+            ->with(['typeDossier', 'user'])
             ->latest()
             ->take(5)
             ->get();
 
-        // Stats par type dynamiques depuis la DB
-        $parType = $user->dossiers()
+        // Stats par type dynamiques desde la DB
+        $parType = (clone $baseQuery)
             ->selectRaw('type_dossier_id, type_dossier, COUNT(*) as total')
             ->groupBy('type_dossier_id', 'type_dossier')
             ->with('typeDossier')
@@ -40,12 +42,12 @@ class DashboardController extends Controller
                 ];
             });
 
-        // Tous les types disponibles (pour le graphique complet)
+        // Tous les types disponibles
         $allTypes = TypeDossier::orderBy('ordre')->get();
 
         return view('dashboard', compact(
-            'totalDossiers', 'enCours', 'valides', 'termines',
-            'derniersDossiers', 'parType', 'allTypes'
+            'totalDossiers', 'enCours', 'termines',
+            'derniersDossiers', 'parType', 'allTypes', 'isAdmin'
         ));
     }
 }

@@ -20,6 +20,7 @@ class User extends Authenticatable
         'telephone',
         'specialite',
         'organisation',
+        'role',
     ];
 
     protected $hidden = [
@@ -33,6 +34,12 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    // -- Helpers
+    public function isAdmin(): bool
+    {
+        return ($this->role ?? 'user') === 'admin';
     }
 
     // Relations

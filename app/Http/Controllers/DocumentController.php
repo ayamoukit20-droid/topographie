@@ -17,7 +17,7 @@ class DocumentController extends Controller
 
         $request->validate([
             'nom'           => 'required|string|max:255',
-            'type_document' => 'required|in:PV,plan,tableau,rapport,contrat,autre',
+            'type_document' => 'required|string|max:255',
             'fichier'       => 'required|file|max:10240|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,zip,rar',
         ]);
 

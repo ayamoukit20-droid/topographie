@@ -5,8 +5,8 @@
 
 @push('styles')
 <style>
-.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 28px; }
-.chart-container { position: relative; height: 200px; }
+.stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 28px; }
+.chart-wrapper { position: relative; height: 260px; width: 100%; margin: 0 auto; }
 .recent-header {
     display: flex; align-items: center; justify-content: space-between;
     margin-bottom: 16px;
@@ -49,11 +49,6 @@
         <div class="stat-label">En cours</div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon" style="background:rgba(59,130,246,0.15);color:#3b82f6;"><i class="bi bi-patch-check"></i></div>
-        <div class="stat-value" style="color:#3b82f6;">{{ $valides }}</div>
-        <div class="stat-label">Validés</div>
-    </div>
-    <div class="stat-card">
         <div class="stat-icon" style="background:rgba(34,197,94,0.15);color:#22c55e;"><i class="bi bi-check2-circle"></i></div>
         <div class="stat-value" style="color:#22c55e;">{{ $termines }}</div>
         <div class="stat-label">Terminés</div>
@@ -85,6 +80,7 @@
                         <tr>
                             <th>Propriétaire</th>
                             <th>Type</th>
+                            @if($isAdmin ?? false) <th>Créé par</th> @endif
                             <th>Date</th>
                             <th>Statut</th>
                             <th></th>
@@ -102,8 +98,15 @@
                                 @endif
                             </td>
                             <td>
-                                <span class="badge-topo badge-secondary">{{ $dossier->type_label }}</span>
+                                <span class="badge-topo" style="background:{{ $dossier->type_badge_css }}; color:{{ $dossier->type_text_css }}; border: 1px solid rgba(255,255,255,0.1);">
+                                    {{ $dossier->type_label }}
+                                </span>
                             </td>
+                            @if($isAdmin ?? false)
+                            <td style="font-size:12px;color:#94a3b8;">
+                                <i class="bi bi-person"></i> {{ $dossier->user?->name ?? 'Système' }}
+                            </td>
+                            @endif
                             <td style="color:var(--text-muted);font-size:13px;">
                                 {{ $dossier->date_creation->format('d/m/Y') }}
                             </td>
@@ -135,7 +138,9 @@
                     Aucune donnée disponible
                 </p>
             @else
-                <canvas id="chartTypes" class="chart-container"></canvas>
+                <div class="chart-wrapper">
+                    <canvas id="chartTypes"></canvas>
+                </div>
             @endif
         </div>
 
@@ -173,21 +178,43 @@ const ctx = document.getElementById('chartTypes').getContext('2d');
 new Chart(ctx, {
     type: 'doughnut',
     data: {
-        labels: {!! json_encode($parType->keys()->map(fn($k) => ucfirst($k))) !!},
+        labels: {!! json_encode($parType->pluck('nom')) !!},
         datasets: [{
-            data: {!! json_encode($parType->values()) !!},
-            backgroundColor: ['#f97316','#3b82f6','#22c55e','#fbbf24','#8b5cf6','#ec4899'],
-            borderWidth: 0,
-            hoverOffset: 6,
+            data: {!! json_encode($parType->pluck('total')) !!},
+            backgroundColor: {!! json_encode($parType->pluck('color')) !!},
+            borderWidth: 2,
+            borderColor: '#1e293b',
+            hoverOffset: 12,
         }]
     },
     options: {
         responsive: true,
         maintainAspectRatio: false,
+        cutout: '72%',
         plugins: {
             legend: {
                 position: 'bottom',
-                labels: { color: '#94a3b8', padding: 16, font: { size: 11 } }
+                labels: {
+                    color: '#94a3b8',
+                    padding: 20,
+                    usePointStyle: true,
+                    pointStyle: 'circle',
+                    font: { size: 11, family: 'Inter', weight: '500' }
+                }
+            },
+            tooltip: {
+                backgroundColor: '#0f172a',
+                titleColor: '#fff',
+                bodyColor: '#94a3b8',
+                borderColor: '#334155',
+                borderWidth: 1,
+                padding: 12,
+                displayColors: true,
+                callbacks: {
+                    label: function(context) {
+                        return ' ' + context.label + ': ' + context.raw + ' dossiers';
+                    }
+                }
             }
         }
     }

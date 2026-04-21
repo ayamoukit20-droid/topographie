@@ -39,7 +39,6 @@
             <select name="statut" class="form-select-topo">
                 <option value="">Tous les statuts</option>
                 <option value="en_cours" {{ request('statut')=='en_cours'?'selected':'' }}>En cours</option>
-                <option value="valide"   {{ request('statut')=='valide'  ?'selected':'' }}>Valide</option>
                 <option value="termine"  {{ request('statut')=='termine' ?'selected':'' }}>Termine</option>
             </select>
         </div>

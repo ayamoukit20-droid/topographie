@@ -36,7 +36,8 @@ Route::middleware('auth')->group(function () {
 
     // Generation PDF avec DomPDF
     Route::get('dossiers/{dossier}/pdf', function (\App\Models\Dossier $dossier) {
-        if ($dossier->user_id !== auth()->id()) {
+        $user = auth()->user();
+        if ($dossier->user_id !== $user->id && !$user->isAdmin()) {
             abort(403, 'Acces non autorise.');
         }
         $dossier->load(['documents', 'user']);
@@ -59,6 +60,14 @@ Route::middleware('auth')->group(function () {
     // Chatbot
     Route::get('chatbot', [ChatbotController::class, 'index'])->name('chatbot.index');
     Route::post('chatbot/repondre', [ChatbotController::class, 'repondre'])->name('chatbot.repondre');
+
+    // Administration (Accès réservé)
+    Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
+        Route::get('/users', [\App\Http\Controllers\Admin\UserController::class, 'index'])->name('users.index');
+        Route::get('/users/{user}/edit', [\App\Http\Controllers\Admin\UserController::class, 'edit'])->name('users.edit');
+        Route::put('/users/{user}', [\App\Http\Controllers\Admin\UserController::class, 'update'])->name('users.update');
+        Route::delete('/users/{user}', [\App\Http\Controllers\Admin\UserController::class, 'destroy'])->name('users.destroy');
+    });
 });
 
 require __DIR__.'/auth.php';
