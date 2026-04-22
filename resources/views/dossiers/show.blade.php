@@ -122,9 +122,39 @@
                     <a href="{{ route('dossiers.edit', $dossier) }}" class="btn-outline-orange">
                         <i class="bi bi-pencil-square"></i> Modifier
                     </a>
-                    <a href="{{ route('pdf.dossier', $dossier) }}" class="btn-orange" target="_blank" id="btn-pdf-dossier">
-                        <i class="bi bi-file-earmark-pdf"></i> PDF
-                    </a>
+                    {{-- Groupe PDF 3 boutons --}}
+                    <div style="position:relative;display:inline-block;" id="pdf-dropdown-wrap">
+                        <button onclick="document.getElementById('pdf-menu').classList.toggle('pdf-open')" class="btn-orange" id="btn-pdf-toggle" style="display:flex;align-items:center;gap:6px;">
+                            <i class="bi bi-file-earmark-pdf"></i> PDF
+                            <i class="bi bi-chevron-down" style="font-size:10px;"></i>
+                        </button>
+                        <div id="pdf-menu" style="display:none;position:absolute;top:calc(100% + 6px);right:0;background:#1e2d4a;border:1px solid rgba(255,255,255,0.12);border-radius:10px;min-width:200px;z-index:100;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,0.4);">
+                            <a href="{{ route('pdf.pv', $dossier) }}" target="_blank" id="btn-pdf-pv"
+                               style="display:flex;align-items:center;gap:10px;padding:11px 16px;color:rgba(255,255,255,0.85);text-decoration:none;font-size:13px;border-bottom:1px solid rgba(255,255,255,0.07);transition:background 0.15s;">
+                                <i class="bi bi-clipboard-check" style="color:#f97316;font-size:16px;"></i>
+                                <div>
+                                    <div style="font-weight:600;">PV de Bornage</div>
+                                    <div style="font-size:10px;color:rgba(255,255,255,0.45);">Procès-verbal officiel</div>
+                                </div>
+                            </a>
+                            <a href="{{ route('pdf.rapport', $dossier) }}" target="_blank" id="btn-pdf-rapport"
+                               style="display:flex;align-items:center;gap:10px;padding:11px 16px;color:rgba(255,255,255,0.85);text-decoration:none;font-size:13px;border-bottom:1px solid rgba(255,255,255,0.07);transition:background 0.15s;">
+                                <i class="bi bi-file-earmark-text" style="color:#2563eb;font-size:16px;"></i>
+                                <div>
+                                    <div style="font-weight:600;">Rapport Technique</div>
+                                    <div style="font-size:10px;color:rgba(255,255,255,0.45);">Détails + checklist</div>
+                                </div>
+                            </a>
+                            <a href="{{ route('pdf.fiche', $dossier) }}" target="_blank" id="btn-pdf-fiche"
+                               style="display:flex;align-items:center;gap:10px;padding:11px 16px;color:rgba(255,255,255,0.85);text-decoration:none;font-size:13px;transition:background 0.15s;">
+                                <i class="bi bi-card-list" style="color:#22c55e;font-size:16px;"></i>
+                                <div>
+                                    <div style="font-weight:600;">Fiche Dossier</div>
+                                    <div style="font-size:10px;color:rgba(255,255,255,0.45);">Récapitulatif compact</div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
                     <form method="POST" action="{{ route('dossiers.destroy', $dossier) }}"
                           onsubmit="return confirm('Supprimer definitivement ce dossier ?')">
                         @csrf @method('DELETE')
@@ -359,9 +389,27 @@
                 <a href="{{ route('dossiers.edit', $dossier) }}" class="btn-orange" style="justify-content:center;">
                     <i class="bi bi-pencil-square"></i> Modifier le dossier
                 </a>
-                <a href="{{ route('pdf.dossier', $dossier) }}" class="btn-outline-orange" style="justify-content:center;" target="_blank">
-                    <i class="bi bi-file-earmark-pdf"></i> Generer PDF
-                </a>
+                {{-- 3 Boutons PDF distincts --}}
+                <div style="border:1px solid rgba(255,255,255,0.08);border-radius:10px;overflow:hidden;">
+                    <div style="padding:8px 12px;background:rgba(255,255,255,0.04);font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px;font-weight:700;display:flex;align-items:center;gap:6px;">
+                        <i class="bi bi-file-earmark-pdf" style="color:#f97316;"></i> Générer PDF
+                    </div>
+                    <a href="{{ route('pdf.pv', $dossier) }}" target="_blank" id="btn-sidebar-pv"
+                       style="display:flex;align-items:center;gap:10px;padding:10px 13px;color:rgba(255,255,255,0.8);text-decoration:none;font-size:12.5px;border-top:1px solid rgba(255,255,255,0.06);transition:background 0.15s;">
+                        <i class="bi bi-clipboard-check" style="color:#f97316;font-size:15px;width:18px;text-align:center;"></i>
+                        PV de Bornage
+                    </a>
+                    <a href="{{ route('pdf.rapport', $dossier) }}" target="_blank" id="btn-sidebar-rapport"
+                       style="display:flex;align-items:center;gap:10px;padding:10px 13px;color:rgba(255,255,255,0.8);text-decoration:none;font-size:12.5px;border-top:1px solid rgba(255,255,255,0.06);transition:background 0.15s;">
+                        <i class="bi bi-file-earmark-text" style="color:#60a5fa;font-size:15px;width:18px;text-align:center;"></i>
+                        Rapport Technique
+                    </a>
+                    <a href="{{ route('pdf.fiche', $dossier) }}" target="_blank" id="btn-sidebar-fiche"
+                       style="display:flex;align-items:center;gap:10px;padding:10px 13px;color:rgba(255,255,255,0.8);text-decoration:none;font-size:12.5px;border-top:1px solid rgba(255,255,255,0.06);transition:background 0.15s;">
+                        <i class="bi bi-card-list" style="color:#4ade80;font-size:15px;width:18px;text-align:center;"></i>
+                        Fiche Dossier
+                    </a>
+                </div>
                 <a href="{{ route('outils.index') }}" class="btn-outline-orange" style="justify-content:center;">
                     <i class="bi bi-calculator"></i> Outils de calcul
                 </a>
@@ -441,4 +489,25 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 @endif
+
+{{-- Dropdown PDF toggle --}}
+<script>
+(function () {
+    const toggle = document.getElementById('btn-pdf-toggle');
+    const menu   = document.getElementById('pdf-menu');
+    if (!toggle || !menu) return;
+
+    toggle.addEventListener('click', function (e) {
+        e.stopPropagation();
+        const isOpen = menu.style.display === 'block';
+        menu.style.display = isOpen ? 'none' : 'block';
+    });
+
+    document.addEventListener('click', function (e) {
+        if (!document.getElementById('pdf-dropdown-wrap')?.contains(e.target)) {
+            if (menu) menu.style.display = 'none';
+        }
+    });
+})();
+</script>
 @endpush

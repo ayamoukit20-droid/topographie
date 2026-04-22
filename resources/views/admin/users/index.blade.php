@@ -4,12 +4,26 @@
 @section('page-title', 'Gestion des Utilisateurs')
 
 @section('content')
-<div class="breadcrumb-topo">
-    <a href="{{ route('dashboard') }}">Accueil</a>
-    <span class="sep">/</span>
-    <span>Administration</span>
-    <span class="sep">/</span>
-    <span>Utilisateurs</span>
+<div class="d-flex justify-content-between align-items-end mb-4">
+    <div>
+        <div class="breadcrumb-topo mb-2">
+            <a href="{{ route('dashboard') }}">Accueil</a>
+            <span class="sep">/</span>
+            <span>Administration</span>
+            <span class="sep">/</span>
+            <span>Utilisateurs</span>
+        </div>
+        <h2 style="font-size:24px;font-weight:800;color:var(--white);margin:0;letter-spacing:-0.5px;">
+            Console d'Administration
+        </h2>
+    </div>
+    <div style="text-align:right;">
+        <span style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;font-weight:700;">Statut Serveur</span>
+        <div class="d-flex align-items-center gap-2 mt-1">
+            <div style="width:8px;height:8px;background:#4ade80;border-radius:50%;box-shadow:0 0 10px #4ade80;"></div>
+            <span style="font-size:13px;font-weight:600;color:#4ade80;">Opérationnel</span>
+        </div>
+    </div>
 </div>
 
 <div class="row g-4 mb-4">

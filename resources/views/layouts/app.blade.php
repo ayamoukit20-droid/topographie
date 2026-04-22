@@ -387,11 +387,36 @@
             .sidebar { transform: translateX(-100%); }
             .main-content { margin-left: 0; }
         }
+        @if(request()->is('admin*'))
+        body.admin-mode {
+            --blue-400: #06b6d4;
+            --blue-500: #0891b2;
+            --blue-300: #22d3ee;
+            --orange-glow: rgba(6,182,212,0.12);
+        }
+        .admin-mode .main-content {
+            background-image: 
+                radial-gradient(circle at 2px 2px, rgba(6,182,212,0.05) 1px, transparent 0);
+            background-size: 32px 32px;
+        }
+        .admin-mode .logo-mark {
+            box-shadow: 0 0 15px rgba(6,182,212,0.3);
+            animation: logo-pulse 3s infinite;
+        }
+        @keyframes logo-pulse {
+            0% { transform: scale(1); box-shadow: 0 0 15px rgba(6,182,212,0.3); }
+            50% { transform: scale(1.05); box-shadow: 0 0 25px rgba(6,182,212,0.5); }
+            100% { transform: scale(1); box-shadow: 0 0 15px rgba(6,182,212,0.3); }
+        }
+        .admin-mode .topbar {
+            border-bottom: 2px solid rgba(6,182,212,0.2);
+        }
+        @endif
     </style>
 
     @stack('styles')
 </head>
-<body>
+<body class="{{ request()->is('admin*') ? 'admin-mode' : '' }}">
 
 <!-- ═══════════ SIDEBAR ═══════════ -->
 <aside class="sidebar">
@@ -442,10 +467,18 @@
         </a>
 
         @if(auth()->user()->isAdmin())
-        <div class="sidebar-section">Administration</div>
+        <div class="sidebar-section" style="color:rgba(249,115,22,0.7);">Administration</div>
+
         <a href="{{ route('admin.users.index') }}"
-           class="nav-item-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
-            <i class="bi bi-people-fill"></i> Gestion utilisateurs
+           class="nav-item-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}"
+           style="{{ request()->routeIs('admin.users.*') ? '' : 'color:rgba(249,115,22,0.7);' }}">
+            <i class="bi bi-people-fill" style="color:#f97316;"></i> Utilisateurs
+        </a>
+
+        <a href="{{ route('admin.dossiers.index') }}"
+           class="nav-item-link {{ request()->routeIs('admin.dossiers.*') ? 'active' : '' }}"
+           style="{{ request()->routeIs('admin.dossiers.*') ? '' : 'color:rgba(249,115,22,0.7);' }}">
+            <i class="bi bi-folder2" style="color:#f97316;"></i> Tous les dossiers
         </a>
         @endif
 

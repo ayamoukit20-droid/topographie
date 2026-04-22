@@ -6,6 +6,7 @@ use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\OutilsTopoController;
 use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PdfController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 
@@ -34,21 +35,12 @@ Route::middleware('auth')->group(function () {
     Route::delete('documents/{document}', [DocumentController::class, 'destroy'])
         ->name('documents.destroy');
 
-    // Generation PDF avec DomPDF
-    Route::get('dossiers/{dossier}/pdf', function (\App\Models\Dossier $dossier) {
-        $user = auth()->user();
-        if ($dossier->user_id !== $user->id && !$user->isAdmin()) {
-            abort(403, 'Acces non autorise.');
-        }
-        $dossier->load(['documents', 'user']);
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.dossier', ['dossier' => $dossier])
-            ->setPaper('a4', 'portrait')
-            ->setOption('defaultFont', 'DejaVu Sans')
-            ->setOption('isHtml5ParserEnabled', true)
-            ->setOption('isRemoteEnabled', false);
-        $filename = 'dossier-' . str_pad($dossier->id, 5, '0', STR_PAD_LEFT) . '-' . Str::slug($dossier->proprietaire) . '.pdf';
-        return $pdf->download($filename);
-    })->name('pdf.dossier');
+    // ── Génération PDF (3 types) ──────────────────────────────────────
+    Route::get('dossiers/{dossier}/pdf/pv',      [PdfController::class, 'pv'])->name('pdf.pv');
+    Route::get('dossiers/{dossier}/pdf/rapport',  [PdfController::class, 'rapport'])->name('pdf.rapport');
+    Route::get('dossiers/{dossier}/pdf/fiche',    [PdfController::class, 'fiche'])->name('pdf.fiche');
+    // Ancienne route (compatibilité)
+    Route::get('dossiers/{dossier}/pdf',          [PdfController::class, 'rapport'])->name('pdf.dossier');
 
     // Outils topographiques
     Route::get('outils', [OutilsTopoController::class, 'index'])->name('outils.index');
@@ -61,12 +53,21 @@ Route::middleware('auth')->group(function () {
     Route::get('chatbot', [ChatbotController::class, 'index'])->name('chatbot.index');
     Route::post('chatbot/repondre', [ChatbotController::class, 'repondre'])->name('chatbot.repondre');
 
-    // Administration (Accès réservé)
+    // ── Administration (Accès réservé) ────────────────────────────────
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
-        Route::get('/users', [\App\Http\Controllers\Admin\UserController::class, 'index'])->name('users.index');
-        Route::get('/users/{user}/edit', [\App\Http\Controllers\Admin\UserController::class, 'edit'])->name('users.edit');
-        Route::put('/users/{user}', [\App\Http\Controllers\Admin\UserController::class, 'update'])->name('users.update');
-        Route::delete('/users/{user}', [\App\Http\Controllers\Admin\UserController::class, 'destroy'])->name('users.destroy');
+
+        // Gestion des utilisateurs
+        Route::get('/users',              [\App\Http\Controllers\Admin\UserController::class, 'index'])->name('users.index');
+        Route::get('/users/{user}/edit',  [\App\Http\Controllers\Admin\UserController::class, 'edit'])->name('users.edit');
+        Route::put('/users/{user}',       [\App\Http\Controllers\Admin\UserController::class, 'update'])->name('users.update');
+        Route::delete('/users/{user}',    [\App\Http\Controllers\Admin\UserController::class, 'destroy'])->name('users.destroy');
+
+        // Gestion globale des dossiers (tous les utilisateurs)
+        Route::get('/dossiers',                      [\App\Http\Controllers\Admin\DossierAdminController::class, 'index'])->name('dossiers.index');
+        Route::get('/dossiers/{dossier}',            [\App\Http\Controllers\Admin\DossierAdminController::class, 'show'])->name('dossiers.show');
+        Route::get('/dossiers/{dossier}/edit',       [\App\Http\Controllers\Admin\DossierAdminController::class, 'edit'])->name('dossiers.edit');
+        Route::put('/dossiers/{dossier}',            [\App\Http\Controllers\Admin\DossierAdminController::class, 'update'])->name('dossiers.update');
+        Route::delete('/dossiers/{dossier}',         [\App\Http\Controllers\Admin\DossierAdminController::class, 'destroy'])->name('dossiers.destroy');
     });
 });
 
