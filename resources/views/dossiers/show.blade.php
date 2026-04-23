@@ -195,6 +195,107 @@
             @endif
         </div>
 
+        {{-- BORNES GPS --}}
+        <div class="card-topo mb-4" id="bornes-card">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                <h6 style="font-size:15px;font-weight:700;margin:0;display:flex;align-items:center;gap:8px;">
+                    <i class="bi bi-pin-map-fill" style="color:#60a5fa;"></i>
+                    Bornes GPS
+                    <span style="font-size:11px;font-weight:400;color:var(--text-muted);">({{ count($dossier->bornes ?? []) }} borne(s))</span>
+                </h6>
+                <button type="button" id="btn-toggle-bornes" onclick="toggleBornesForm()"
+                        class="btn-outline-orange" style="padding:6px 12px;font-size:12px;">
+                    <i class="bi bi-plus-lg"></i> Gérer les bornes
+                </button>
+            </div>
+
+            {{-- Tableau des bornes existantes --}}
+            @if(!empty($dossier->bornes) && count($dossier->bornes) > 0)
+            <div style="overflow-x:auto;margin-bottom:16px;">
+                <table style="width:100%;border-collapse:collapse;font-size:13px;">
+                    <thead>
+                        <tr style="border-bottom:1px solid var(--border);">
+                            <th style="padding:8px 10px;text-align:left;color:var(--text-muted);font-size:10px;text-transform:uppercase;letter-spacing:0.8px;font-weight:700;">Borne</th>
+                            <th style="padding:8px 10px;text-align:left;color:var(--text-muted);font-size:10px;text-transform:uppercase;letter-spacing:0.8px;font-weight:700;">Latitude</th>
+                            <th style="padding:8px 10px;text-align:left;color:var(--text-muted);font-size:10px;text-transform:uppercase;letter-spacing:0.8px;font-weight:700;">Longitude</th>
+                            <th style="padding:8px 10px;text-align:left;color:var(--text-muted);font-size:10px;text-transform:uppercase;letter-spacing:0.8px;font-weight:700;">Note</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($dossier->bornes as $i => $borne)
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+                            <td style="padding:10px;font-weight:700;color:#60a5fa;">
+                                {{ $borne['label'] ?? 'B-' . str_pad($i+1, 2, '0', STR_PAD_LEFT) }}
+                            </td>
+                            <td style="padding:10px;font-family:monospace;color:var(--white);">{{ number_format($borne['lat'], 6) }}°</td>
+                            <td style="padding:10px;font-family:monospace;color:var(--white);">{{ number_format($borne['lng'], 6) }}°</td>
+                            <td style="padding:10px;color:var(--text-muted);font-size:12px;">{{ $borne['note'] ?? '—' }}</td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            @else
+            <div style="text-align:center;padding:20px;color:var(--text-muted);border:1px dashed rgba(255,255,255,0.08);border-radius:8px;margin-bottom:16px;font-size:13px;">
+                <i class="bi bi-pin-map" style="font-size:28px;opacity:0.3;display:block;margin-bottom:6px;"></i>
+                Aucune borne enregistrée. Cliquez sur "Gérer les bornes" pour en ajouter.
+            </div>
+            @endif
+
+            {{-- Formulaire de saisie des bornes (caché par défaut) --}}
+            <div id="bornes-form-wrap" style="display:none;">
+                <div style="border-top:1px solid var(--border);padding-top:16px;">
+                    <form method="POST" action="{{ route('dossiers.bornes.update', $dossier) }}" id="bornes-form">
+                        @csrf @method('PUT')
+
+                        <div id="bornes-rows" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;">
+                            @if(!empty($dossier->bornes))
+                                @foreach($dossier->bornes as $i => $borne)
+                                <div class="borne-row" style="display:grid;grid-template-columns:80px 1fr 1fr 1fr auto;gap:8px;align-items:center;">
+                                    <input type="text"  name="bornes[{{ $i }}][label]"
+                                           value="{{ $borne['label'] ?? 'B-' . str_pad($i+1,2,'0',STR_PAD_LEFT) }}"
+                                           placeholder="B-01" class="form-control-topo" style="font-size:12px;">
+                                    <input type="number" name="bornes[{{ $i }}][lat]"
+                                           value="{{ $borne['lat'] }}"
+                                           placeholder="Lat" step="0.000001" class="form-control-topo" style="font-size:12px;" required>
+                                    <input type="number" name="bornes[{{ $i }}][lng]"
+                                           value="{{ $borne['lng'] }}"
+                                           placeholder="Lng" step="0.000001" class="form-control-topo" style="font-size:12px;" required>
+                                    <input type="text"  name="bornes[{{ $i }}][note]"
+                                           value="{{ $borne['note'] ?? '' }}"
+                                           placeholder="Note..." class="form-control-topo" style="font-size:12px;">
+                                    <button type="button" onclick="this.closest('.borne-row').remove()"
+                                            style="padding:8px 10px;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);color:#f87171;border-radius:7px;cursor:pointer;">
+                                        <i class="bi bi-x-lg"></i>
+                                    </button>
+                                </div>
+                                @endforeach
+                            @endif
+                        </div>
+
+                        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+                            <button type="button" onclick="addBorneRow()"
+                                    class="btn-outline-orange" style="padding:7px 14px;font-size:12px;" id="btn-add-borne">
+                                <i class="bi bi-plus-circle"></i> Ajouter une borne
+                            </button>
+                            <button type="submit" class="btn-orange" style="padding:7px 16px;" id="btn-save-bornes">
+                                <i class="bi bi-save2"></i> Enregistrer les bornes
+                            </button>
+                            <button type="button" onclick="toggleBornesForm()"
+                                    style="padding:7px 12px;background:transparent;border:1px solid rgba(255,255,255,0.1);color:var(--text-muted);border-radius:8px;cursor:pointer;font-size:12px;">
+                                Annuler
+                            </button>
+                        </div>
+
+                        <p style="font-size:11px;color:var(--text-muted);margin-top:10px;">
+                            <i class="bi bi-info-circle"></i>
+                            Vous pouvez également cliquer sur la carte ci-dessous pour placer les bornes automatiquement.
+                        </p>
+                    </form>
+                </div>
+            </div>
+        </div>
+
         {{-- DOCUMENTS --}}
         <div class="card-topo">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
@@ -455,11 +556,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const lat = {{ $dossier->lat }};
     const lng = {{ $dossier->lng }};
 
-    const map = L.map('map-show', {
+    window._dossierMap = L.map('map-show', {
         zoomControl: true,
         scrollWheelZoom: false,
         attributionControl: true
     }).setView([lat, lng], 14);
+    const map = window._dossierMap;
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
@@ -509,5 +611,64 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 })();
+</script>
+
+<script>
+// ── BORNES GPS ──────────────────────────────────────────
+let borneIdx = {{ count($dossier->bornes ?? []) }};
+
+function toggleBornesForm() {
+    const wrap = document.getElementById('bornes-form-wrap');
+    const isHidden = wrap.style.display === 'none';
+    wrap.style.display = isHidden ? 'block' : 'none';
+    document.getElementById('btn-toggle-bornes').innerHTML =
+        isHidden
+            ? '<i class="bi bi-x-lg"></i> Fermer'
+            : '<i class="bi bi-plus-lg"></i> Gérer les bornes';
+}
+
+function addBorneRow(lat, lng) {
+    const container = document.getElementById('bornes-rows');
+    const i = borneIdx++;
+    const label = 'B-' + String(i + 1).padStart(2, '0');
+    const row = document.createElement('div');
+    row.className = 'borne-row';
+    row.style.cssText = 'display:grid;grid-template-columns:80px 1fr 1fr 1fr auto;gap:8px;align-items:center;';
+    row.innerHTML = `
+        <input type="text"   name="bornes[${i}][label]" value="${label}"
+               placeholder="B-01" class="form-control-topo" style="font-size:12px;">
+        <input type="number" name="bornes[${i}][lat]"   value="${lat ?? ''}"
+               placeholder="Lat" step="0.000001" class="form-control-topo" style="font-size:12px;" required>
+        <input type="number" name="bornes[${i}][lng]"   value="${lng ?? ''}"
+               placeholder="Lng" step="0.000001" class="form-control-topo" style="font-size:12px;" required>
+        <input type="text"   name="bornes[${i}][note]"  value=""
+               placeholder="Note..." class="form-control-topo" style="font-size:12px;">
+        <button type="button" onclick="this.closest('.borne-row').remove()"
+                style="padding:8px 10px;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);color:#f87171;border-radius:7px;cursor:pointer;">
+            <i class="bi bi-x-lg"></i>
+        </button>`;
+    container.appendChild(row);
+    row.querySelector('input[name*="[lat]"]').focus();
+}
+
+// Clic sur la carte = ajouter une borne auto / ouvrir le formulaire
+@if($dossier->lat && $dossier->lng)
+document.addEventListener('DOMContentLoaded', function() {
+    const mapEl = document.getElementById('map-show');
+    if (!mapEl) return;
+    // On écoute après l'init Leaflet (qui se fait dans le push script suivant)
+    setTimeout(function() {
+        if (typeof window._dossierMap !== 'undefined') {
+            window._dossierMap.on('click', function(e) {
+                const wrap = document.getElementById('bornes-form-wrap');
+                if (wrap.style.display === 'none') {
+                    toggleBornesForm();
+                }
+                addBorneRow(e.latlng.lat.toFixed(7), e.latlng.lng.toFixed(7));
+            });
+        }
+    }, 500);
+});
+@endif
 </script>
 @endpush

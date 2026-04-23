@@ -437,13 +437,46 @@
     </div>
 
     <nav class="sidebar-nav">
-        <div class="sidebar-section">Navigation</div>
 
+        {{-- Tableau de bord — commun --}}
+        <div class="sidebar-section">Navigation</div>
         <a href="{{ route('dashboard') }}"
            class="nav-item-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
             <i class="bi bi-grid-1x2-fill"></i> Tableau de bord
         </a>
 
+        @if(auth()->user()->isAdmin())
+        {{-- ════ MENU ADMINISTRATEUR ════ --}}
+        <div class="sidebar-section" style="margin-top:8px;color:rgba(249,115,22,0.8);border-top:1px solid rgba(255,255,255,0.06);padding-top:18px;">Gestion Globale</div>
+
+        <a href="{{ route('admin.dossiers.index') }}"
+           class="nav-item-link {{ request()->routeIs('admin.dossiers.*') ? 'active' : '' }}"
+           style="color:{{ request()->routeIs('admin.dossiers.*') ? '' : 'rgba(255,255,255,0.75)' }};">
+            <i class="bi bi-folder2-open" style="color:#f97316;"></i> Tous les dossiers
+        </a>
+
+        <a href="{{ route('admin.users.index') }}"
+           class="nav-item-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}"
+           style="color:{{ request()->routeIs('admin.users.*') ? '' : 'rgba(255,255,255,0.75)' }};">
+            <i class="bi bi-people-fill" style="color:#f97316;"></i> Utilisateurs
+        </a>
+
+        <div class="sidebar-section" style="color:rgba(249,115,22,0.8);">Outils</div>
+
+        <a href="{{ route('outils.index') }}"
+           class="nav-item-link {{ request()->routeIs('outils.*') ? 'active' : '' }}"
+           style="color:{{ request()->routeIs('outils.*') ? '' : 'rgba(255,255,255,0.75)' }};">
+            <i class="bi bi-calculator" style="color:#f97316;"></i> Outils topographiques
+        </a>
+
+        <a href="{{ route('chatbot.index') }}"
+           class="nav-item-link {{ request()->routeIs('chatbot.*') ? 'active' : '' }}"
+           style="color:{{ request()->routeIs('chatbot.*') ? '' : 'rgba(255,255,255,0.75)' }};">
+            <i class="bi bi-chat-dots-fill" style="color:#f97316;"></i> Assistant IA
+        </a>
+
+        @else
+        {{-- ════ MENU UTILISATEUR (Topographe) ════ --}}
         <a href="{{ route('dossiers.index') }}"
            class="nav-item-link {{ request()->routeIs('dossiers.index') ? 'active' : '' }}">
             <i class="bi bi-folder2-open"></i> Mes dossiers
@@ -465,23 +498,9 @@
            class="nav-item-link {{ request()->routeIs('chatbot.*') ? 'active' : '' }}">
             <i class="bi bi-chat-dots-fill"></i> Assistant IA
         </a>
-
-        @if(auth()->user()->isAdmin())
-        <div class="sidebar-section" style="color:rgba(249,115,22,0.7);">Administration</div>
-
-        <a href="{{ route('admin.users.index') }}"
-           class="nav-item-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}"
-           style="{{ request()->routeIs('admin.users.*') ? '' : 'color:rgba(249,115,22,0.7);' }}">
-            <i class="bi bi-people-fill" style="color:#f97316;"></i> Utilisateurs
-        </a>
-
-        <a href="{{ route('admin.dossiers.index') }}"
-           class="nav-item-link {{ request()->routeIs('admin.dossiers.*') ? 'active' : '' }}"
-           style="{{ request()->routeIs('admin.dossiers.*') ? '' : 'color:rgba(249,115,22,0.7);' }}">
-            <i class="bi bi-folder2" style="color:#f97316;"></i> Tous les dossiers
-        </a>
         @endif
 
+        {{-- Compte — commun --}}
         <div class="sidebar-section">Compte</div>
 
         <a href="{{ route('profile.edit') }}"
@@ -528,12 +547,23 @@
             @endif
         </div>
         <div class="topbar-actions">
-            <a href="{{ route('dossiers.create') }}" class="btn-orange">
-                <i class="bi bi-plus-lg"></i> Nouveau dossier
-            </a>
-            <a href="{{ route('chatbot.index') }}" class="btn-outline-orange">
-                <i class="bi bi-chat-dots"></i> Assistant
-            </a>
+            @if(auth()->user()->isAdmin())
+                <a href="{{ route('admin.dossiers.index') }}"
+                   class="{{ request()->routeIs('admin.dossiers.*') ? 'btn-orange' : 'btn-outline-orange' }}">
+                    <i class="bi bi-folder2-open"></i> Tous les dossiers
+                </a>
+                <a href="{{ route('admin.users.index') }}"
+                   class="{{ request()->routeIs('admin.users.*') ? 'btn-orange' : 'btn-outline-orange' }}">
+                    <i class="bi bi-people-fill"></i> Utilisateurs
+                </a>
+            @else
+                <a href="{{ route('dossiers.create') }}" class="btn-orange">
+                    <i class="bi bi-plus-lg"></i> Nouveau dossier
+                </a>
+                <a href="{{ route('chatbot.index') }}" class="btn-outline-orange">
+                    <i class="bi bi-chat-dots"></i> Assistant
+                </a>
+            @endif
         </div>
     </div>
 

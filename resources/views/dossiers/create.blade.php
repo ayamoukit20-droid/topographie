@@ -123,9 +123,29 @@
                     <span id="coords-text">Position selectionnee</span>
                 </div>
 
-                {{-- Champs caches lat/lng --}}
-                <input type="hidden" name="lat" id="lat-input" value="{{ old('lat') }}">
-                <input type="hidden" name="lng" id="lng-input" value="{{ old('lng') }}">
+                {{-- Champs lat/lng visibles et éditables --}}
+                <div class="row g-3 mt-2">
+                    <div class="col-md-5">
+                        <label class="form-label-topo">Latitude</label>
+                        <input type="number" name="lat" id="lat-input" value="{{ old('lat') }}"
+                               step="0.000001" class="form-control-topo" placeholder="Ex: 33.589886"
+                               oninput="syncMapFromInputs()">
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label-topo">Longitude</label>
+                        <input type="number" name="lng" id="lng-input" value="{{ old('lng') }}"
+                               step="0.000001" class="form-control-topo" placeholder="Ex: -7.603869"
+                               oninput="syncMapFromInputs()">
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="button" onclick="geolocate()"
+                                style="width:100%;padding:10px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);color:#4ade80;border-radius:8px;cursor:pointer;font-size:12px;display:flex;flex-direction:column;align-items:center;gap:2px;"
+                                title="Ma position">
+                            <i class="bi bi-crosshair2" style="font-size:16px;"></i>
+                            <span>GPS</span>
+                        </button>
+                    </div>
+                </div>
             </div>
 
             {{-- ── BOUTONS ── --}}
@@ -238,6 +258,27 @@ function updateCoords(lat, lng) {
     document.getElementById('coords-text').textContent =
         `Lat: ${lat.toFixed(5)}, Lng: ${lng.toFixed(5)}`;
     document.getElementById('coords-badge').style.display = 'flex';
+}
+
+// Sync depuis les champs texte → carte
+function syncMapFromInputs() {
+    const lat = parseFloat(document.getElementById('lat-input').value);
+    const lng = parseFloat(document.getElementById('lng-input').value);
+    if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+        placeMarker(lat, lng);
+        map.setView([lat, lng], map.getZoom() < 10 ? 13 : map.getZoom());
+    }
+}
+
+// Géolocalisation navigateur
+function geolocate() {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(function(pos) {
+        placeMarker(pos.coords.latitude, pos.coords.longitude);
+        map.setView([pos.coords.latitude, pos.coords.longitude], 15);
+    }, function() {
+        alert('Impossible de récupérer votre position GPS.');
+    });
 }
 
 // ── GUIDE INTERACTIF ──

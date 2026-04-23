@@ -114,40 +114,122 @@
 
     <!-- Sidebar profil -->
     <div class="col-lg-4">
+        {{-- Avatar + infos principales --}}
         <div class="card-topo text-center mb-4">
-            <div style="width:80px;height:80px;background:var(--orange);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:700;margin:0 auto 16px;box-shadow:0 8px 24px rgba(249,115,22,0.4);">
+            <div style="width:80px;height:80px;background:linear-gradient(135deg,var(--orange),#f59e0b);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:700;margin:0 auto 16px;box-shadow:0 8px 24px rgba(249,115,22,0.35);">
                 {{ strtoupper(substr($user->name, 0, 1)) }}
             </div>
             <h6 style="font-size:18px;font-weight:700;margin-bottom:4px;">{{ $user->name }}</h6>
-            <p style="font-size:13px;color:var(--text-muted);margin-bottom:0;">{{ $user->specialite ?? 'Topographe' }}</p>
-            @if($user->organisation)
-                <p style="font-size:12px;color:var(--text-muted);margin-top:4px;">
-                    <i class="bi bi-building" style="color:var(--orange);"></i>
-                    {{ $user->organisation }}
-                </p>
+            <p style="font-size:13px;color:var(--text-muted);margin-bottom:8px;">
+                {{ $user->specialite ?: 'Spécialité non définie' }}
+            </p>
+            @if($user->isAdmin())
+                <span style="display:inline-block;padding:3px 12px;background:rgba(249,115,22,0.15);color:#f97316;border:1px solid rgba(249,115,22,0.3);border-radius:20px;font-size:11px;font-weight:700;">
+                    <i class="bi bi-shield-lock-fill"></i> Administrateur
+                </span>
+            @else
+                <span style="display:inline-block;padding:3px 12px;background:rgba(96,165,250,0.12);color:#60a5fa;border:1px solid rgba(96,165,250,0.25);border-radius:20px;font-size:11px;font-weight:700;">
+                    <i class="bi bi-person-badge"></i> Topographe
+                </span>
             @endif
         </div>
 
+        {{-- Informations détaillées --}}
         <div class="card-topo mb-4">
-            <h6 style="font-size:14px;font-weight:700;margin-bottom:16px;">Statistiques</h6>
-            @php $stats = auth()->user()->dossiers(); @endphp
+            <h6 style="font-size:13px;font-weight:700;margin-bottom:16px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px;">
+                <i class="bi bi-info-circle" style="color:#60a5fa;margin-right:6px;"></i>Informations
+            </h6>
             <div style="display:flex;flex-direction:column;gap:12px;font-size:13px;">
-                <div style="display:flex;justify-content:space-between;">
+
+                <div style="display:flex;align-items:flex-start;gap:10px;">
+                    <i class="bi bi-envelope" style="color:#60a5fa;margin-top:1px;flex-shrink:0;"></i>
+                    <div>
+                        <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:1px;">Email</div>
+                        <div style="color:var(--white);">{{ $user->email }}</div>
+                    </div>
+                </div>
+
+                <div style="display:flex;align-items:flex-start;gap:10px;">
+                    <i class="bi bi-phone" style="color:#60a5fa;margin-top:1px;flex-shrink:0;"></i>
+                    <div>
+                        <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:1px;">Téléphone</div>
+                        <div style="color:{{ $user->telephone ? 'var(--white)' : 'var(--text-muted)' }};">
+                            {{ $user->telephone ?: 'Non renseigné' }}
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display:flex;align-items:flex-start;gap:10px;">
+                    <i class="bi bi-tools" style="color:#60a5fa;margin-top:1px;flex-shrink:0;"></i>
+                    <div>
+                        <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:1px;">Spécialité</div>
+                        <div style="color:{{ $user->specialite ? 'var(--white)' : 'var(--text-muted)' }};">
+                            {{ $user->specialite ?: 'Non renseignée' }}
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display:flex;align-items:flex-start;gap:10px;">
+                    <i class="bi bi-building" style="color:#60a5fa;margin-top:1px;flex-shrink:0;"></i>
+                    <div>
+                        <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:1px;">Organisation</div>
+                        <div style="color:{{ $user->organisation ? 'var(--white)' : 'var(--text-muted)' }};">
+                            {{ $user->organisation ?: 'Non renseignée' }}
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display:flex;align-items:flex-start;gap:10px;">
+                    <i class="bi bi-calendar-check" style="color:#60a5fa;margin-top:1px;flex-shrink:0;"></i>
+                    <div>
+                        <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:1px;">Membre depuis</div>
+                        <div style="color:var(--white);">{{ $user->created_at->format('d/m/Y') }}</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        {{-- Statistiques --}}
+        <div class="card-topo">
+            <h6 style="font-size:13px;font-weight:700;margin-bottom:16px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px;">
+                <i class="bi bi-bar-chart-fill" style="color:var(--orange);margin-right:6px;"></i>Activité
+            </h6>
+            @php
+                $myDossiers = $user->dossiers();
+                $myTotal    = $myDossiers->count();
+                $myEnCours  = (clone $myDossiers)->where('statut','en_cours')->count();
+                $myTermines = (clone $myDossiers)->where('statut','termine')->count();
+                $myDocs     = \App\Models\Document::whereHas('dossier', fn($q) => $q->where('user_id', $user->id))->count();
+            @endphp
+            <div style="display:flex;flex-direction:column;gap:10px;font-size:13px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
                     <span style="color:var(--text-muted);">Total dossiers</span>
-                    <span style="color:var(--orange);font-weight:700;">{{ $stats->count() }}</span>
+                    <span style="color:var(--orange);font-weight:700;font-size:15px;">{{ $myTotal }}</span>
                 </div>
-                <div style="display:flex;justify-content:space-between;">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
                     <span style="color:var(--text-muted);">En cours</span>
-                    <span style="color:#fbbf24;font-weight:700;">{{ $stats->where('statut','en_cours')->count() }}</span>
+                    <span style="color:#fbbf24;font-weight:700;">{{ $myEnCours }}</span>
                 </div>
-                <div style="display:flex;justify-content:space-between;">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
                     <span style="color:var(--text-muted);">Terminés</span>
-                    <span style="color:#22c55e;font-weight:700;">{{ $stats->where('statut','termine')->count() }}</span>
+                    <span style="color:#22c55e;font-weight:700;">{{ $myTermines }}</span>
                 </div>
-                <div style="display:flex;justify-content:space-between;">
-                    <span style="color:var(--text-muted);">Membre depuis</span>
-                    <span>{{ $user->created_at->format('M Y') }}</span>
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <span style="color:var(--text-muted);">Documents</span>
+                    <span style="color:#c084fc;font-weight:700;">{{ $myDocs }}</span>
                 </div>
+                @if($myTotal > 0)
+                <div style="margin-top:4px;">
+                    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-bottom:4px;">
+                        <span>Progression</span>
+                        <span>{{ round(($myTermines / $myTotal) * 100) }}%</span>
+                    </div>
+                    <div style="height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;">
+                        <div style="height:100%;width:{{ round(($myTermines / $myTotal) * 100) }}%;background:linear-gradient(90deg,#22c55e,#16a34a);border-radius:3px;transition:width 0.5s;"></div>
+                    </div>
+                </div>
+                @endif
             </div>
         </div>
     </div>

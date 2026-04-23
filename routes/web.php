@@ -35,6 +35,10 @@ Route::middleware('auth')->group(function () {
     Route::delete('documents/{document}', [DocumentController::class, 'destroy'])
         ->name('documents.destroy');
 
+    // Bornes GPS d'un dossier (mise à jour)
+    Route::put('dossiers/{dossier}/bornes', [DossierController::class, 'updateBornes'])
+        ->name('dossiers.bornes.update');
+
     // ── Génération PDF (3 types) ──────────────────────────────────────
     Route::get('dossiers/{dossier}/pdf/pv',      [PdfController::class, 'pv'])->name('pdf.pv');
     Route::get('dossiers/{dossier}/pdf/rapport',  [PdfController::class, 'rapport'])->name('pdf.rapport');

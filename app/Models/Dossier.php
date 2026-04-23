@@ -11,8 +11,8 @@ class Dossier extends Model
 
     protected $fillable = [
         'user_id',
-        'type_dossier_id',   // FK vers types_dossiers (nouveau)
-        'type_dossier',      // Code string (conservé pour compatibilité)
+        'type_dossier_id',
+        'type_dossier',
         'proprietaire',
         'description',
         'date_creation',
@@ -20,12 +20,14 @@ class Dossier extends Model
         'localisation',
         'lat',
         'lng',
+        'bornes',
     ];
 
     protected $casts = [
         'date_creation' => 'date',
         'lat'           => 'float',
         'lng'           => 'float',
+        'bornes'        => 'array',
     ];
 
     // ── RELATIONS ──────────────────────────────────

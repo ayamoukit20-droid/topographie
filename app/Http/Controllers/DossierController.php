@@ -135,4 +135,30 @@ class DossierController extends Controller
         return redirect()->route('dossiers.index')
             ->with('success', 'Dossier supprime avec succes !');
     }
+
+    /**
+     * Mettre à jour les bornes GPS d'un dossier
+     */
+    public function updateBornes(Request $request, Dossier $dossier)
+    {
+        $this->authorize('update', $dossier);
+
+        $request->validate([
+            'bornes'          => 'nullable|array|max:50',
+            'bornes.*.label'  => 'nullable|string|max:20',
+            'bornes.*.lat'    => 'required_with:bornes|numeric|between:-90,90',
+            'bornes.*.lng'    => 'required_with:bornes|numeric|between:-180,180',
+            'bornes.*.note'   => 'nullable|string|max:100',
+        ]);
+
+        $bornes = collect($request->bornes ?? [])
+            ->filter(fn($b) => !empty($b['lat']) && !empty($b['lng']))
+            ->values()
+            ->toArray();
+
+        $dossier->update(['bornes' => $bornes ?: null]);
+
+        return redirect()->route('dossiers.show', $dossier)
+            ->with('success', count($bornes) . ' borne(s) enregistrée(s) avec succès.');
+    }
 }

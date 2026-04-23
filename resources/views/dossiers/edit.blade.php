@@ -133,7 +133,34 @@
                 <i class="bi bi-pin-map-fill"></i>
                 <span id="coords-text-edit">Position selectionnee</span>
             </div>
-            {{-- Les champs lat/lng sont dans le form principal via JS --}}
+
+            {{-- Champs lat/lng visibles (injectés dans le form main via JS) --}}
+            <div class="row g-3 mt-2">
+                <div class="col-md-5">
+                    <label class="form-label-topo">Latitude</label>
+                    <input type="number" id="lat-edit-vis"
+                           value="{{ $dossier->lat }}"
+                           step="0.000001" class="form-control-topo"
+                           placeholder="Ex: 33.589886"
+                           oninput="syncMapFromInputsEdit()">
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label-topo">Longitude</label>
+                    <input type="number" id="lng-edit-vis"
+                           value="{{ $dossier->lng }}"
+                           step="0.000001" class="form-control-topo"
+                           placeholder="Ex: -7.603869"
+                           oninput="syncMapFromInputsEdit()">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="button" onclick="geolocateEdit()"
+                            style="width:100%;padding:10px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);color:#4ade80;border-radius:8px;cursor:pointer;font-size:12px;display:flex;flex-direction:column;align-items:center;gap:2px;"
+                            title="Ma position">
+                        <i class="bi bi-crosshair2" style="font-size:16px;"></i>
+                        <span>GPS</span>
+                    </button>
+                </div>
+            </div>
         </div>
 
     </div>
@@ -247,8 +274,34 @@ function placeMarker(lat, lng) {
 function updateCoords(lat, lng) {
     document.getElementById('lat-edit').value = lat.toFixed(7);
     document.getElementById('lng-edit').value = lng.toFixed(7);
+    // Sync champs visibles aussi
+    const visLat = document.getElementById('lat-edit-vis');
+    const visLng = document.getElementById('lng-edit-vis');
+    if (visLat) visLat.value = lat.toFixed(7);
+    if (visLng) visLng.value = lng.toFixed(7);
     document.getElementById('coords-text-edit').textContent = `Lat: ${lat.toFixed(5)}, Lng: ${lng.toFixed(5)}`;
     document.getElementById('coords-badge-edit').style.display = 'flex';
+}
+
+// Sync depuis les champs texte → carte
+function syncMapFromInputsEdit() {
+    const lat = parseFloat(document.getElementById('lat-edit-vis').value);
+    const lng = parseFloat(document.getElementById('lng-edit-vis').value);
+    if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+        placeMarker(lat, lng);
+        map.setView([lat, lng], map.getZoom() < 10 ? 13 : map.getZoom());
+    }
+}
+
+// Géolocalisation
+function geolocateEdit() {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(function(pos) {
+        placeMarker(pos.coords.latitude, pos.coords.longitude);
+        map.setView([pos.coords.latitude, pos.coords.longitude], 15);
+    }, function() {
+        alert('Impossible de récupérer votre position GPS.');
+    });
 }
 
 // Charger position existante

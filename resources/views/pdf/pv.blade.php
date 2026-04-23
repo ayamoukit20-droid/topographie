@@ -262,86 +262,72 @@
     <div class="section">
         <div class="section-title">III. Coordonnées Géographiques des Bornes</div>
 
-        @if($dossier->lat && $dossier->lng)
-        <table class="coords-table">
-            <thead>
-                <tr>
-                    <th>Borne N°</th>
-                    <th>Latitude (Y)</th>
-                    <th>Longitude (X)</th>
-                    <th>Système de Référence</th>
-                    <th>Observations</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><strong>B-01</strong></td>
-                    <td>{{ number_format($dossier->lat, 6) }}°</td>
-                    <td>{{ number_format($dossier->lng, 6) }}°</td>
-                    <td>WGS 84 / Lambert Maroc</td>
-                    <td>Borne principale</td>
-                </tr>
-                <tr>
-                    <td style="color:#94a3b8;">B-02</td>
-                    <td style="color:#94a3b8;" colspan="4">À compléter sur le terrain</td>
-                </tr>
-                <tr>
-                    <td style="color:#94a3b8;">B-03</td>
-                    <td style="color:#94a3b8;" colspan="4">À compléter sur le terrain</td>
-                </tr>
-                <tr>
-                    <td style="color:#94a3b8;">B-04</td>
-                    <td style="color:#94a3b8;" colspan="4">À compléter sur le terrain</td>
-                </tr>
-            </tbody>
-        </table>
-        @else
-        <table class="coords-table">
-            <thead>
-                <tr>
-                    <th>Borne N°</th>
-                    <th>Latitude (Y)</th>
-                    <th>Longitude (X)</th>
-                    <th>Système de Référence</th>
-                    <th>Observations</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>B-01</td>
-                    <td>________________________</td>
-                    <td>________________________</td>
-                    <td>WGS 84 / Lambert Maroc</td>
-                    <td></td>
-                </tr>
-                <tr>
-                    <td>B-02</td>
-                    <td>________________________</td>
-                    <td>________________________</td>
-                    <td>WGS 84 / Lambert Maroc</td>
-                    <td></td>
-                </tr>
-                <tr>
-                    <td>B-03</td>
-                    <td>________________________</td>
-                    <td>________________________</td>
-                    <td>WGS 84 / Lambert Maroc</td>
-                    <td></td>
-                </tr>
-                <tr>
-                    <td>B-04</td>
-                    <td>________________________</td>
-                    <td>________________________</td>
-                    <td>WGS 84 / Lambert Maroc</td>
-                    <td></td>
-                </tr>
-            </tbody>
-        </table>
-        @endif
+        @php
+            $bornes = $dossier->bornes ?? [];
 
+            // Si des bornes multiples existent, les utiliser
+            // Sinon, utiliser lat/lng principal comme borne 1
+            if (empty($bornes) && $dossier->lat && $dossier->lng) {
+                $bornes = [[
+                    'label' => 'B-01',
+                    'lat'   => $dossier->lat,
+                    'lng'   => $dossier->lng,
+                    'note'  => 'Borne principale (position GPS du dossier)',
+                ]];
+            }
+        @endphp
+
+        <table class="coords-table">
+            <thead>
+                <tr>
+                    <th>Borne N°</th>
+                    <th>Latitude (Y)</th>
+                    <th>Longitude (X)</th>
+                    <th>Système de Référence</th>
+                    <th>Observations</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if(!empty($bornes))
+                    @foreach($bornes as $i => $borne)
+                    <tr>
+                        <td><strong>{{ $borne['label'] ?? 'B-' . str_pad($i+1, 2, '0', STR_PAD_LEFT) }}</strong></td>
+                        <td>{{ number_format((float)$borne['lat'], 6) }}°</td>
+                        <td>{{ number_format((float)$borne['lng'], 6) }}°</td>
+                        <td>WGS 84 / Lambert Maroc</td>
+                        <td>{{ $borne['note'] ?? '' }}</td>
+                    </tr>
+                    @endforeach
+                    {{-- Lignes vides pour signature terrain (min 4 lignes total) --}}
+                    @for($i = count($bornes); $i < 4; $i++)
+                    <tr>
+                        <td style="color:#94a3b8;">B-{{ str_pad($i+1, 2, '0', STR_PAD_LEFT) }}</td>
+                        <td style="color:#94a3b8;" colspan="4">À compléter sur le terrain</td>
+                    </tr>
+                    @endfor
+                @else
+                    @for($i = 0; $i < 4; $i++)
+                    <tr>
+                        <td>B-{{ str_pad($i+1, 2, '0', STR_PAD_LEFT) }}</td>
+                        <td>________________________</td>
+                        <td>________________________</td>
+                        <td>WGS 84 / Lambert Maroc</td>
+                        <td></td>
+                    </tr>
+                    @endfor
+                @endif
+            </tbody>
+        </table>
+
+        @if(!empty($bornes))
         <p style="margin-top:8px;font-size:8.5pt;color:#64748b;">
-            * Coordonnées enregistrées dans le système géodésique national. Précision ± 0.5 m.
+            * {{ count($bornes) }} borne(s) enregistrée(s) dans le système numérique. Précision ± 0.5 m.
         </p>
+        @else
+        <p style="margin-top:8px;font-size:8.5pt;color:#64748b;">
+            * Coordonnées à renseigner après les opérations de terrain. Précision ± 0.5 m.
+        </p>
+        @endif
     </div>
 
     {{-- 4. DÉCLARATION DES TÉMOINS / RIVERAINS --}}
